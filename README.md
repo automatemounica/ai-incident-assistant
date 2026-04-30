@@ -48,4 +48,4 @@ Open `index.html` in any browser.
 ![Export](screenshots/export.png)
 
 ## Live Demo
-(Will be added after GitHub Pages deployment)
+https://automatemounica.github.io/ai-incident-assistant/
