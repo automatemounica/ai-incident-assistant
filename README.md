@@ -47,5 +47,14 @@ Open `index.html` in any browser.
 ### Export Options
 ![Export](screenshots/export.png)
 
+### Incident List Page
+![List](screenshots/list.png)
+
+### Search & Filter
+![Search](screenshots/search.png)
+
+### View Incident Details
+![View](screenshots/view.png)
+
 ## Live Demo
 https://automatemounica.github.io/ai-incident-assistant/
