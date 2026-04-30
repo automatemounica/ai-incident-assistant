@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Incident Assistant</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1d4ed8);
+            padding: 40px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 780px;
+            margin: auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 18px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.25);
+        }
+
+        .logo {
+            width: 180px;
+            margin-bottom: 20px;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .hero h1 {
+            font-size: 34px;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .hero p {
+            color: #475569;
+            font-size: 16px;
+        }
+
+        .primary-btn {
+            padding: 12px 24px;
+            background: linear-gradient(90deg, #2563eb, #1e40af);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .secondary-btn {
+            padding: 12px 24px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .back-btn {
+            padding: 12px 24px;
+            background: #64748b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .box {
+            margin-top: 20px;
+            padding: 24px;
+            background: #eef2ff;
+            border-radius: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 13px;
+            margin-top: 12px;
+            box-sizing: border-box;
+            font-size: 15px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+        }
+
+        textarea {
+            height: 110px;
+        }
+
+        .progress-text {
+            color: #2563eb;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #dbeafe;
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #2563eb, #16a34a);
+            transition: 0.3s;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .chart {
+            margin-top: 25px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .bar-row {
+            margin-bottom: 14px;
+        }
+
+        .bar-label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            background: #e5e7eb;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 18px;
+            background: linear-gradient(90deg, #2563eb, #16a34a);
+            color: white;
+            font-size: 12px;
+            text-align: right;
+            padding-right: 8px;
+            line-height: 18px;
+        }
+
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #resultBox, #resultBox * {
+                visibility: visible;
+            }
+
+            #resultBox {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: #ffffff;
+            }
+
+            .button-row {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div id="landingPage" class="hero">
+        <img src="logo.png" alt="EHSWatch Logo" class="logo">
+        <h1>Welcome to EHSWatch AI Assistant</h1>
+        <p>Start reporting incidents seamlessly with our intelligent AI-driven workflow.</p>
+        <button class="primary-btn" onclick="startIncident()">Report an Incident</button>
+    </div>
+
+    <div id="questionBox" class="box" style="display:none;">
+        <div class="progress-text" id="progressText"></div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <h3 id="questionText"></h3>
+
+        <div id="answerArea"></div>
+
+        <div class="button-row">
+            <button id="backBtn" class="back-btn" onclick="previousQuestion()" style="display:none;">Back</button>
+            <button id="nextBtn" class="primary-btn" onclick="nextQuestion()">Next</button>
+            <button id="submitBtn" class="secondary-btn" onclick="submitForm()" style="display:none;">Submit Incident</button>
+        </div>
+    </div>
+
+    <div id="resultBox" class="box" style="display:none;">
+        <div class="success">Incident report has been created successfully.</div>
+
+        <h3>Final Incident Summary</h3>
+
+        <div id="summaryText"></div>
+
+        <div class="chart">
+            <h3>Incident Analytics</h3>
+            <div id="chartContent"></div>
+        </div>
+
+        <div class="button-row" style="margin-top:20px;">
+            <div style="position:relative;">
+                    <button class="primary-btn" onclick="toggleExportOptions()">Export</button>
+
+                    <div id="exportOptions" style="display:none; position:absolute; top:48px; left:0; background:white; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.15); z-index:10; min-width:170px;">
+                        <button onclick="exportExcel()" style="display:block; width:100%; padding:12px; border:none; background:white; text-align:left; cursor:pointer;">Export to Excel</button>
+                        <button onclick="exportPDF()" style="display:block; width:100%; padding:12px; border:none; background:white; text-align:left; cursor:pointer;">Export to PDF</button>
+                    </div>
+                </div>
+
+                <button class="secondary-btn" onclick="closeSummary()">Close</button>
+                <button class="primary-btn" onclick="restartIncident()">Report Another Incident</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+let currentStep = 0;
+let answers = {};
+let questions = [];
+
+function startIncident() {
+    answers = {};
+    currentStep = 0;
+
+    questions = [
+        { key: "title", label: "Incident Title", text: "What is the title of the incident?", type: "text" },
+        { key: "description", label: "Description", text: "Please describe what happened.", type: "textarea" },
+        { key: "date", label: "Date of Incident", text: "What is the date of incident?", type: "date" },
+        { key: "time", label: "Time of Incident", text: "What is the time of incident?", type: "time" },
+        { key: "location", label: "Exact Location", text: "Where exactly did this happen?", type: "text" },
+        { key: "reportedBy", label: "Reported By", text: "Who is reporting this incident?", type: "text" },
+        { key: "isValid", label: "Incident Valid", text: "Is this incident valid?", type: "select", options: ["Yes", "No"] }
+    ];
+
+    document.getElementById("landingPage").style.display = "none";
+    document.getElementById("resultBox").style.display = "none";
+    document.getElementById("questionBox").style.display = "block";
+
+    showQuestion();
+}
+
+function showQuestion() {
+    const q = questions[currentStep];
+
+    document.getElementById("questionText").innerText = q.text;
+
+    let html = "";
+
+    if (q.type === "select") {
+        html = `
+            <select id="answerInput">
+                <option value="">-- Select --</option>
+                ${q.options.map(o => `<option value="${o}">${o}</option>`).join("")}
+            </select>
+        `;
+    } else if (q.type === "textarea") {
+        html = `<textarea id="answerInput" placeholder="Enter incident details"></textarea>`;
+    } else {
+        let defaultValue = "";
+
+        if (q.type === "date") {
+            defaultValue = new Date().toISOString().split("T")[0];
+        }
+
+        if (q.type === "time") {
+            defaultValue = new Date().toTimeString().slice(0, 5);
+        }
+
+        html = `<input type="${q.type}" id="answerInput" value="${defaultValue}" placeholder="Enter your answer">`;
+    }
+
+    document.getElementById("answerArea").innerHTML = html;
+
+    updateProgress();
+
+    document.getElementById("backBtn").style.display =
+        currentStep === 0 ? "none" : "inline-block";
+
+    if (currentStep === questions.length - 1 && q.key === "finalStatus") {
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("submitBtn").style.display = "inline-block";
+    } else {
+        document.getElementById("nextBtn").style.display = "inline-block";
+        document.getElementById("submitBtn").style.display = "none";
+    }
+}
+
+function updateProgress() {
+    const progress = Math.round(((currentStep + 1) / questions.length) * 100);
+
+    document.getElementById("progressText").innerText =
+        `Step ${currentStep + 1} of ${questions.length}`;
+
+    document.getElementById("progressFill").style.width = progress + "%";
+}
+
+function nextQuestion() {
+    const val = document.getElementById("answerInput").value.trim();
+
+    if (!val) {
+        alert("Please enter/select a value.");
+        return;
+    }
+
+    const q = questions[currentStep];
+
+    answers[q.key] = {
+        label: q.label,
+        value: val
+    };
+
+    if (q.key === "isValid") {
+        questions = questions.slice(0, currentStep + 1);
+
+        if (val === "Yes") {
+            questions.push(
+                { key: "investigationRequired", label: "Investigation Required", text: "Is investigation required?", type: "select", options: ["Yes", "No"] }
+            );
+        } else {
+            questions.push(
+                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Rejected", "Closed"] }
+            );
+        }
+    }
+
+    if (q.key === "investigationRequired") {
+        questions = questions.slice(0, currentStep + 1);
+
+        if (val === "Yes") {
+            questions.push(
+                { key: "leadInvestigator", label: "Lead Investigator", text: "Who will be the lead investigator?", type: "text" },
+                { key: "methodology", label: "Investigation Methodology", text: "What investigation methodology is used?", type: "select", options: ["SCAT", "ICAM", "5 Why", "Fishbone"] },
+                { key: "approvedBy", label: "Approved By", text: "Who approved it?", type: "text" },
+                { key: "approvedDate", label: "Approved Date", text: "When was it approved?", type: "date" },
+                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Open", "Under Investigation", "Approved", "Closed", "Rejected"] }
+            );
+        } else {
+            questions.push(
+                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Closed", "No Action Required"] }
+            );
+        }
+    }
+
+    currentStep++;
+    showQuestion();
+}
+
+function previousQuestion() {
+    if (currentStep > 0) {
+        currentStep--;
+        showQuestion();
+    }
+}
+
+function submitForm() {
+    const val = document.getElementById("answerInput").value.trim();
+
+    if (!val) {
+        alert("Please enter/select a value.");
+        return;
+    }
+
+    const q = questions[currentStep];
+
+    answers[q.key] = {
+        label: q.label,
+        value: val
+    };
+
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+
+    const recordNo = "INC-" + String(data.length + 1).padStart(4, "0");
+
+    answers.recordNo = {
+        label: "Record No",
+        value: recordNo
+    };
+
+    data.push({
+        recordNo: recordNo,
+        title: answers.title?.value || "",
+        description: answers.description?.value || "",
+        date: answers.date?.value || "",
+        time: answers.time?.value || "",
+        location: answers.location?.value || "",
+        reportedBy: answers.reportedBy?.value || "",
+        isValid: answers.isValid?.value || "",
+        investigationRequired: answers.investigationRequired?.value || "",
+        leadInvestigator: answers.leadInvestigator?.value || "",
+        methodology: answers.methodology?.value || "",
+        approvedBy: answers.approvedBy?.value || "",
+        approvedDate: answers.approvedDate?.value || "",
+        finalStatus: answers.finalStatus?.value || ""
+    });
+
+    localStorage.setItem("incidentData", JSON.stringify(data));
+
+    document.getElementById("questionBox").style.display = "none";
+    document.getElementById("resultBox").style.display = "block";
+
+    let summaryHtml = "";
+
+    Object.keys(answers).forEach(key => {
+        summaryHtml += `
+            <div class="summary-item">
+                <strong>${answers[key].label}:</strong> ${answers[key].value}
+            </div>
+        `;
+    });
+
+    document.getElementById("summaryText").innerHTML = summaryHtml;
+
+    updateCharts();
+}
+
+function updateCharts() {
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+
+    const total = data.length;
+
+    const reportedMap = {};
+    const approvedMap = {};
+    const investigatorMap = {};
+    const methodMap = {};
+
+    data.forEach(d => {
+        if (d.reportedBy) reportedMap[d.reportedBy] = (reportedMap[d.reportedBy] || 0) + 1;
+        if (d.approvedBy) approvedMap[d.approvedBy] = (approvedMap[d.approvedBy] || 0) + 1;
+        if (d.leadInvestigator) investigatorMap[d.leadInvestigator] = (investigatorMap[d.leadInvestigator] || 0) + 1;
+        if (d.methodology) methodMap[d.methodology] = (methodMap[d.methodology] || 0) + 1;
+    });
+
+    let chartHTML = `
+        <div class="summary-item"><strong>Total Incidents Reported:</strong> ${total}</div>
+    `;
+
+    function buildBars(title, map) {
+        let html = `<h4>${title}</h4>`;
+
+        if (Object.keys(map).length === 0) {
+            html += `<div class="summary-item">No data available</div>`;
+            return html;
+        }
+
+        Object.keys(map).forEach(key => {
+            let percent = Math.round((map[key] / total) * 100);
+            html += `
+                <div class="bar-row">
+                    <div class="bar-label">${key} (${map[key]})</div>
+                    <div class="bar-bg">
+                        <div class="bar" style="width:${percent}%">${percent}%</div>
+                    </div>
+                </div>
+            `;
+        });
+
+        return html;
+    }
+
+    chartHTML += buildBars("Reported By", reportedMap);
+    chartHTML += buildBars("Approved By", approvedMap);
+    chartHTML += buildBars("Investigated By", investigatorMap);
+    chartHTML += buildBars("Methodologies Used", methodMap);
+
+    document.getElementById("chartContent").innerHTML = chartHTML;
+}
+
+function exportPDF() {
+    window.print();
+}
+
+function exportExcel() {
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+
+    if (data.length === 0) {
+        alert("No incident data available to export.");
+        return;
+    }
+
+    let csv = "Record No,Title,Description,Date,Time,Location,Reported By,Incident Valid,Investigation Required,Lead Investigator,Methodology,Approved By,Approved Date,Final Status\n";
+
+    data.forEach(item => {
+        csv += `"${item.recordNo}","${item.title}","${item.description}","${item.date}","${item.time}","${item.location}","${item.reportedBy}","${item.isValid}","${item.investigationRequired}","${item.leadInvestigator}","${item.methodology}","${item.approvedBy}","${item.approvedDate}","${item.finalStatus}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+    link.download = "incident_reports.csv";
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function toggleExportOptions() {
+    const exportOptions = document.getElementById("exportOptions");
+
+    if (exportOptions.style.display === "none") {
+        exportOptions.style.display = "block";
+    } else {
+        exportOptions.style.display = "none";
+    }
+}
+
+function closeSummary() {
+    document.getElementById("resultBox").style.display = "none";
+    document.getElementById("landingPage").style.display = "block";
+}
+
+function restartIncident() {
+    answers = {};
+    questions = [];
+    currentStep = 0;
+
+    document.getElementById("progressFill").style.width = "0%";
+    document.getElementById("resultBox").style.display = "none";
+
+    startIncident();
+}
+</script>
+
+</body>
+</html>
