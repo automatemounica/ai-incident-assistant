@@ -20,11 +20,6 @@
             box-shadow: 0 20px 45px rgba(0,0,0,0.25);
         }
 
-        .logo {
-            width: 180px;
-            margin-bottom: 20px;
-        }
-
         .hero {
             text-align: center;
             padding: 40px 20px;
@@ -66,6 +61,17 @@
         .back-btn {
             padding: 12px 24px;
             background: #64748b;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .exit-btn {
+            padding: 12px 24px;
+            background: #dc2626;
             color: white;
             border: none;
             border-radius: 10px;
@@ -144,64 +150,83 @@
             border-radius: 12px;
         }
 
-        .bar-row {
-            margin-bottom: 14px;
+        .bar-row { margin-bottom: 14px; }
+        .bar-label { font-weight: bold; margin-bottom: 5px; }
+        .bar-bg { background: #e5e7eb; border-radius: 20px; overflow: hidden; }
+        .bar { height: 18px; background: linear-gradient(90deg, #2563eb, #16a34a); color: white; font-size: 12px; text-align: right; padding-right: 8px; line-height: 18px; }
+
+        .edit-tools {
+            display: none;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
         }
 
-        .bar-label {
+        .edit-tools label { font-weight: bold; color: #0f172a; }
+        .edit-tools select { width: auto; min-width: 260px; margin-top: 0; }
+
+        .suggestion-card {
+            margin-top: 14px;
+            padding: 14px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+            border-radius: 10px;
+            color: #0f172a;
+            line-height: 1.5;
+        }
+
+        .incident-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .incident-table th, .incident-table td { padding: 12px; text-align: left; vertical-align: middle; word-break: break-word; }
+        .incident-table th { background: #1e40af; color: white; }
+
+        .incident-actions { display: flex; gap: 6px; align-items: center; justify-content: flex-start; flex-wrap: nowrap; }
+        .view-btn, .edit-btn, .delete-btn, .export-icon-btn { color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        .view-btn { background: #2563eb; }
+        .edit-btn { background: #f59e0b; }
+        .delete-btn { background: #dc2626; }
+        .export-icon-btn { background: #16a34a; }
+        .icon-btn { width: 36px; height: 34px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 17px; line-height: 1; font-weight: bold; }
+        .edit-icon-text { color: #ffffff; font-size: 18px; font-weight: bold; }
+
+        .modal-card { background: white; width: 90%; max-width: 650px; max-height: 80vh; margin: 60px auto; padding: 20px; border-radius: 10px; display: flex; flex-direction: column; }
+        .modal-scroll-content { overflow-y: auto; max-height: 55vh; padding-right: 10px; line-height: 1.5; word-break: break-word; }
+
+
+        .step-heading {
+            margin-top: 10px;
+            margin-bottom: 12px;
             font-weight: bold;
-            margin-bottom: 5px;
+            color: #1e3a8a;
+            text-align: center;
+            font-size: 15px;
+            letter-spacing: 1px;
         }
 
-        .bar-bg {
-            background: #e5e7eb;
-            border-radius: 20px;
-            overflow: hidden;
-        }
-
-        .bar {
-            height: 18px;
-            background: linear-gradient(90deg, #2563eb, #16a34a);
-            color: white;
-            font-size: 12px;
-            text-align: right;
-            padding-right: 8px;
-            line-height: 18px;
+        .step-heading::before,
+        .step-heading::after {
+            content: "• • •";
+            color: #2563eb;
+            margin: 0 10px;
+            font-weight: normal;
         }
 
         @media print {
-            body {
-                background: #ffffff;
-                padding: 0;
-            }
-
-            body * {
-                visibility: hidden;
-            }
-
-            #resultBox, #resultBox * {
-                visibility: visible;
-            }
-
-            #resultBox {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                background: #ffffff;
-            }
-
-            .button-row {
-                display: none;
-            }
+            body { background: #ffffff; padding: 0; }
+            body * { visibility: hidden; }
+            #resultBox, #resultBox * { visibility: visible; }
+            #resultBox { position: absolute; left: 0; top: 0; width: 100%; background: #ffffff; }
+            .button-row { display: none; }
         }
     </style>
 </head>
-
 <body>
 
 <div class="container">
-
     <div style="text-align:center; margin-bottom:20px;">
         <img src="logo.png" alt="EHSWatch Logo" style="height:60px;">
     </div>
@@ -209,19 +234,24 @@
     <div id="landingPage" class="hero">
         <h1>Welcome to EHSWatch AI Assistant</h1>
         <p>Start reporting incidents seamlessly with our intelligent AI-driven workflow.</p>
+        <div class="step-heading">Submit Incident Flow</div>
         <button class="primary-btn" onclick="startIncident()">Report an Incident</button>
         <button class="secondary-btn" onclick="openListPage()" style="margin-left:10px;">View Incidents</button>
     </div>
 
     <div id="questionBox" class="box" style="display:none;">
-        <div class="progress-text" id="progressText"></div>
-
-        <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
+        <div id="editTools" class="edit-tools">
+            <label for="stepJumpSelect">Move to Step</label>
+            <select id="stepJumpSelect" onchange="moveToStep(this.value)"></select>
+            <button type="button" class="secondary-btn" onclick="saveDraft()" id="saveDraftBtn">Save Draft </button>
+            <button type="button" class="exit-btn" onclick="exitIncident()">Exit</button>
         </div>
 
-        <h3 id="questionText"></h3>
+        <div id="flowStepHeading" class="step-heading"></div>
 
+        <div class="progress-text" id="progressText"></div>
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <h3 id="questionText"></h3>
         <div id="answerArea"></div>
 
         <div class="button-row">
@@ -232,27 +262,12 @@
     </div>
 
     <div id="resultBox" class="box" style="display:none;">
+        <div class="step-heading">Final Summary & Analytics</div>
         <div class="success">Incident report has been created successfully.</div>
-
         <h3>Final Incident Summary</h3>
-
         <div id="summaryText"></div>
-
-        <div class="chart">
-            <h3>Incident Analytics</h3>
-            <div id="chartContent"></div>
-        </div>
-
+        <div class="chart"><h3>Incident Analytics</h3><div id="chartContent"></div></div>
         <div class="button-row" style="margin-top:20px;">
-            <div style="position:relative;">
-                <button class="primary-btn" onclick="toggleExportOptions()">Export</button>
-
-                <div id="exportOptions" style="display:none; position:absolute; top:48px; left:0; background:white; border:1px solid #cbd5e1; border-radius:10px; box-shadow:0 8px 20px rgba(0,0,0,0.15); z-index:10; min-width:170px;">
-                    <button onclick="exportExcel()" style="display:block; width:100%; padding:12px; border:none; background:white; text-align:left; cursor:pointer;">Export to Excel</button>
-                    <button onclick="exportPDF()" style="display:block; width:100%; padding:12px; border:none; background:white; text-align:left; cursor:pointer;">Export to PDF</button>
-                </div>
-            </div>
-
             <button class="secondary-btn" onclick="closeSummary()">Close</button>
             <button class="primary-btn" onclick="restartIncident()">Report Another Incident</button>
         </div>
@@ -260,57 +275,42 @@
 
     <div id="listBox" class="box" style="display:none;">
         <h3>All Reported Incidents</h3>
-
-        <div style="display:flex; align-items:center; gap:10px; margin-top:10px;">
-            <input
-                type="text"
-                id="searchInput"
-                placeholder="Search..."
-                onkeyup="renderTable()"
-                style="flex:1; height:42px; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-top:0;"
-            >
-
-            <button
-                onclick="clearSearch()"
-                class="back-btn"
-                style="height:42px; padding:0 16px; display:flex; align-items:center; justify-content:center;"
-            >
-                Clear
-            </button>
+        <div class="step-heading">Incident List & Management</div>
+        <div style="display:flex; align-items:center; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <input type="text" id="searchInput" placeholder="Search..." onkeyup="renderTable()" style="flex:1; min-width:240px; height:42px; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-top:0;">
+            <button onclick="clearSearch()" class="back-btn" style="height:42px; padding:0 16px; display:flex; align-items:center; justify-content:center;">Clear</button>
+            <button onclick="exportExcel()" class="secondary-btn" style="height:42px; padding:0 16px; display:flex; align-items:center; justify-content:center;">Export All</button>
         </div>
 
         <div style="overflow-x:auto; margin-top:15px;">
-    <table id="incidentTable" style="width:100%; border-collapse: collapse; table-layout: fixed;">
-        <thead>
-            <tr style="background:#1e40af; color:white;">
-                <th style="padding:12px; text-align:left; width:18%;">Record No</th>
-                <th style="padding:12px; text-align:left; width:25%;">Title</th>
-                <th style="padding:12px; text-align:left; width:25%;">Reported By</th>
-                <th style="padding:12px; text-align:left; width:17%;">Status</th>
-                <th style="padding:12px; text-align:center; width:15%;">Action</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-        <div class="button-row">
-            <button class="back-btn" onclick="goHome()">Back</button>
+            <table id="incidentTable" class="incident-table">
+                <thead>
+                    <tr>
+                        <th style="width:14%;">Record No</th>
+                        <th style="width:18%;">Title</th>
+                        <th style="width:15%;">Incident Date</th>
+                        <th style="width:17%;">Reported By</th>
+                        <th style="width:14%;">Status</th>
+                        <th style="width:22%;">Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div>
-    </div>
 
+        <div class="button-row"><button class="back-btn" onclick="goHome()">Back</button></div>
+    </div>
 </div>
 
 <script>
 let currentStep = 0;
 let answers = {};
 let questions = [];
+let editIndex = null;
+let currentSuggestion = null;
 
-function startIncident() {
-    answers = {};
-    currentStep = 0;
-
-    questions = [
+function getBaseQuestions() {
+    return [
         { key: "title", label: "Incident Title", text: "What is the title of the incident?", type: "text" },
         { key: "description", label: "Description", text: "Please describe what happened.", type: "textarea" },
         { key: "date", label: "Date of Incident", text: "What is the date of incident?", type: "date" },
@@ -319,48 +319,82 @@ function startIncident() {
         { key: "reportedBy", label: "Reported By", text: "Who is reporting this incident?", type: "text" },
         { key: "isValid", label: "Incident Valid", text: "Is this incident valid?", type: "select", options: ["Yes", "No"] }
     ];
+}
+
+function startIncident() {
+    answers = {};
+    currentStep = 0;
+    editIndex = null;
+    currentSuggestion = null;
+    questions = getBaseQuestions();
+    document.getElementById("submitBtn").innerText = "Submit Incident";
 
     document.getElementById("landingPage").style.display = "none";
     document.getElementById("resultBox").style.display = "none";
     document.getElementById("listBox").style.display = "none";
     document.getElementById("questionBox").style.display = "block";
-
+    document.getElementById("saveDraftBtn").innerText = "Save Draft";
     showQuestion();
+}
+
+function getFlowStepHeading(key) {
+    if (["title", "description", "date", "time", "location", "reportedBy"].includes(key)) {
+        return "📝 ….. Step 1: Basic Incident Details …..";
+    }
+
+    if (["isValid"].includes(key)) {
+        return "✅ ….. Step 2: Validation & Decision …..";
+    }
+
+    if (["investigationRequired", "leadInvestigator", "methodology", "approvedBy", "approvedDate"].includes(key)) {
+        return "🔍 ….. Step 3: Investigation & Approval …..";
+    }
+
+    if (["finalStatus"].includes(key)) {
+        return "🏁 ….. Step 4: Closure …..";
+    }
+
+    return "📝 ….. Submit Incident Flow …..";
 }
 
 function showQuestion() {
     const q = questions[currentStep];
+
+    const flowStepHeading = document.getElementById("flowStepHeading");
+    if (flowStepHeading) {
+        flowStepHeading.innerText = getFlowStepHeading(q.key);
+    }
 
     document.getElementById("questionText").innerText = q.text;
 
     let html = "";
 
     if (q.type === "select") {
-        html = `
-            <select id="answerInput">
-                <option value="">-- Select --</option>
-                ${q.options.map(o => `<option value="${o}">${o}</option>`).join("")}
-            </select>
-        `;
+        html = `<select id="answerInput"><option value="">-- Select --</option>${q.options.map(o => `<option value="${o}">${o}</option>`).join("")}</select>`;
     } else if (q.type === "textarea") {
         html = `<textarea id="answerInput" placeholder="Enter incident details"></textarea>`;
     } else {
         let defaultValue = "";
+        if (q.type === "date") defaultValue = new Date().toISOString().split("T")[0];
+        if (q.type === "time") defaultValue = new Date().toTimeString().slice(0, 5);
 
-        if (q.type === "date") {
-            defaultValue = new Date().toISOString().split("T")[0];
+        if (q.key === "title") {
+            html = `<input type="${q.type}" id="answerInput" value="${defaultValue}" placeholder="Enter incident title" oninput="showAISuggestionPreview()"><div id="aiSuggestionPreview"></div>`;
+        } else {
+            html = `<input type="${q.type}" id="answerInput" value="${defaultValue}" placeholder="Enter your answer">`;
         }
-
-        if (q.type === "time") {
-            defaultValue = new Date().toTimeString().slice(0, 5);
-        }
-
-        html = `<input type="${q.type}" id="answerInput" value="${defaultValue}" placeholder="Enter your answer">`;
     }
 
     document.getElementById("answerArea").innerHTML = html;
 
+    if (answers[q.key] && answers[q.key].value) {
+        document.getElementById("answerInput").value = answers[q.key].value;
+    }
+
+    if (q.key === "title") showAISuggestionPreview();
+
     updateProgress();
+    updateStepJumpOptions();
 
     document.getElementById("backBtn").style.display =
         currentStep === 0 ? "none" : "inline-block";
@@ -376,45 +410,136 @@ function showQuestion() {
 
 function updateProgress() {
     const progress = Math.round(((currentStep + 1) / questions.length) * 100);
-
-    document.getElementById("progressText").innerText =
-        `Step ${currentStep + 1} of ${questions.length}`;
-
+    document.getElementById("progressText").innerText = `Step ${currentStep + 1} of ${questions.length}`;
     document.getElementById("progressFill").style.width = progress + "%";
 }
 
-function nextQuestion() {
-    const val = document.getElementById("answerInput").value.trim();
+function saveCurrentAnswerIfAvailable() {
+    const input = document.getElementById("answerInput");
+    if (!input || !questions[currentStep]) return;
+    const q = questions[currentStep];
+    const val = input.value.trim();
+    if (val) answers[q.key] = { label: q.label, value: val };
+}
 
-    if (!val) {
-        alert("Please enter/select a value.");
-        return;
+function updateStepJumpOptions() {
+    const editTools = document.getElementById("editTools");
+    const stepJumpSelect = document.getElementById("stepJumpSelect");
+    editTools.style.display = "flex";
+    stepJumpSelect.innerHTML = questions.map((q, index) => {
+        const selected = index === currentStep ? "selected" : "";
+        return `<option value="${index}" ${selected}>Step ${index + 1} - ${q.label}</option>`;
+    }).join("");
+}
+
+function moveToStep(stepIndex) {
+    const targetStep = parseInt(stepIndex, 10);
+    if (isNaN(targetStep) || targetStep < 0 || targetStep >= questions.length) return;
+    saveCurrentAnswerIfAvailable();
+    currentStep = targetStep;
+    showQuestion();
+}
+
+function getAISuggestion(title) {
+    let text = (title || "").toLowerCase();
+
+    let description = "";
+    let correctiveAction = "";
+
+    // 🔹 helper function
+    function hasAny(words) {
+        return words.some(word => text.includes(word));
     }
 
-    const q = questions[currentStep];
+    // 🔹 conditions
+    if (hasAny(["slip", "trip", "fall"])) {
+        description = "A person slipped/tripped/fell due to unsafe floor condition, obstruction, or poor housekeeping.";
+        correctiveAction = "Clean area, remove obstruction, place warning signage, inspect floor condition.";
+    }
 
-    answers[q.key] = {
-        label: q.label,
-        value: val
+    else if (hasAny(["accident", "crash", "collision", "hit"])) {
+        description = "An accident occurred due to unsafe conditions or unsafe act at workplace.";
+        correctiveAction = "Secure the area, assess injuries, identify root cause, implement preventive measures.";
+    }
+
+    else if (hasAny(["electric", "shock", "short circuit"])) {
+        description = "Electrical safety incident or unsafe electrical condition reported.";
+        correctiveAction = "Isolate power, restrict access, inform authorized electrical team.";
+    }
+
+    else if (hasAny(["height", "ladder", "scaffold"])) {
+        description = "Work at height related incident or unsafe condition reported.";
+        correctiveAction = "Stop work, inspect equipment, ensure fall protection.";
+    }
+
+    else if (hasAny(["fire", "smoke", "burn"])) {
+        description = "Fire or burn related incident reported.";
+        correctiveAction = "Activate emergency response, isolate area, use fire extinguisher.";
+    }
+
+    else if (hasAny(["near miss", "unsafe", "hazard"])) {
+        description = "Near miss or unsafe condition reported that could lead to an incident.";
+        correctiveAction = "Assess risk and apply immediate control measures.";
+    }
+
+    else {
+        description = "Please provide more details about the incident to generate a better suggestion.";
+        correctiveAction = "Review the situation, identify immediate risks, and take appropriate action as per site safety procedures.";
+    }
+
+    // ✅ store globally
+    window.currentSuggestion = {
+        description,
+        correctiveAction
     };
 
+    return `
+        <div style="margin-top:10px; padding:10px; background:#eef2ff; border-left:4px solid #2563eb; border-radius:6px;">
+            <b>Suggestion:</b><br>
+            Suggested Description: ${description}<br>
+            Suggested Corrective Action: ${correctiveAction}
+            <br>
+            <button onclick="applySuggestion()" class="secondary-btn" style="margin-top:10px;">
+                Use this suggestion
+            </button>
+        </div>
+    `;
+}
+
+function showAISuggestionPreview() {
+    const input = document.getElementById("answerInput");
+    const suggestionBox = document.getElementById("aiSuggestionPreview");
+    if (!input || !suggestionBox) return;
+    const title = input.value.trim();
+    if (!title) {
+        suggestionBox.innerHTML = "";
+        currentSuggestion = null;
+        return;
+    }
+    suggestionBox.innerHTML = getAISuggestion(title);
+}
+
+function applySuggestion() {
+    if (!currentSuggestion) {
+        alert("No suggestion available.");
+        return;
+    }
+    answers.description = { label: "Description", value: currentSuggestion.description };
+    alert("Suggestion applied. Please continue to the Description step to review or update it.");
+}
+
+function addDependentQuestions(q, val) {
     if (q.key === "isValid") {
         questions = questions.slice(0, currentStep + 1);
-
         if (val === "Yes") {
-            questions.push(
-                { key: "investigationRequired", label: "Investigation Required", text: "Is investigation required?", type: "select", options: ["Yes", "No"] }
-            );
+            questions.push({ key: "investigationRequired", label: "Investigation Required", text: "Is investigation required?", type: "select", options: ["Yes", "No"] });
         } else {
-            questions.push(
-                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Rejected", "Closed"] }
-            );
+            questions.push({ key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Rejected", "Closed"] });
         }
     }
 
     if (q.key === "investigationRequired") {
         questions = questions.slice(0, currentStep + 1);
-
         if (val === "Yes") {
             questions.push(
                 { key: "leadInvestigator", label: "Lead Investigator", text: "Who will be the lead investigator?", type: "text" },
@@ -424,48 +549,35 @@ function nextQuestion() {
                 { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Open", "Under Investigation", "Approved", "Closed", "Rejected"] }
             );
         } else {
-            questions.push(
-                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Closed", "No Action Required"] }
-            );
+            questions.push({ key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Closed", "No Action Required"] });
         }
     }
+}
 
+function nextQuestion() {
+    const input = document.getElementById("answerInput");
+    const val = input.value.trim();
+    if (!val) {
+        alert("Please enter/select a value.");
+        return;
+    }
+    const q = questions[currentStep];
+    answers[q.key] = { label: q.label, value: val };
+    addDependentQuestions(q, val);
     currentStep++;
     showQuestion();
 }
 
 function previousQuestion() {
     if (currentStep > 0) {
+        saveCurrentAnswerIfAvailable();
         currentStep--;
         showQuestion();
     }
 }
 
-function submitForm() {
-    const val = document.getElementById("answerInput").value.trim();
-
-    if (!val) {
-        alert("Please enter/select a value.");
-        return;
-    }
-
-    const q = questions[currentStep];
-
-    answers[q.key] = {
-        label: q.label,
-        value: val
-    };
-
-    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
-
-    const recordNo = "INC-" + String(data.length + 1).padStart(4, "0");
-
-    answers.recordNo = {
-        label: "Record No",
-        value: recordNo
-    };
-
-    data.push({
+function buildIncidentItem(recordNo, finalStatusOverride) {
+    return {
         recordNo: recordNo,
         title: answers.title?.value || "",
         description: answers.description?.value || "",
@@ -479,27 +591,79 @@ function submitForm() {
         methodology: answers.methodology?.value || "",
         approvedBy: answers.approvedBy?.value || "",
         approvedDate: answers.approvedDate?.value || "",
-        finalStatus: answers.finalStatus?.value || ""
-    });
+        finalStatus: finalStatusOverride || answers.finalStatus?.value || ""
+    };
+}
+
+function saveDraft() {
+    saveCurrentAnswerIfAvailable();
+
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+
+    const recordNo = editIndex !== null
+        ? data[editIndex].recordNo
+        : "INC-" + String(data.length + 1).padStart(4, "0");
+
+    const draftItem = {
+        recordNo: recordNo,
+        title: answers.title?.value || "",
+        description: answers.description?.value || "",
+        date: answers.date?.value || "",
+        time: answers.time?.value || "",
+        location: answers.location?.value || "",
+        reportedBy: answers.reportedBy?.value || "",
+        isValid: answers.isValid?.value || "",
+        investigationRequired: answers.investigationRequired?.value || "",
+        finalStatus: editIndex !== null ? (answers.finalStatus?.value || "Draft") : "Draft"
+    };
+
+    if (editIndex !== null) {
+        data[editIndex] = draftItem;
+        alert("Incident updated successfully!");
+        editIndex = null;
+    } else {
+        data.push(draftItem);
+        alert("Draft saved successfully!");
+    }
 
     localStorage.setItem("incidentData", JSON.stringify(data));
 
+    goHome();
+}
+
+function submitForm() {
+    const val = document.getElementById("answerInput").value.trim();
+    if (!val) {
+        alert("Please enter/select a value.");
+        return;
+    }
+    const q = questions[currentStep];
+    answers[q.key] = { label: q.label, value: val };
+
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+    const recordNo = editIndex !== null ? data[editIndex].recordNo : "INC-" + String(data.length + 1).padStart(4, "0");
+    answers.recordNo = { label: "Record No", value: recordNo };
+    const incidentItem = buildIncidentItem(recordNo);
+
+    if (editIndex !== null) {
+        data[editIndex] = incidentItem;
+        editIndex = null;
+        document.querySelector("#resultBox .success").innerText = "Incident report has been updated successfully.";
+    } else {
+        data.push(incidentItem);
+        document.querySelector("#resultBox .success").innerText = "Incident report has been created successfully.";
+    }
+
+    localStorage.setItem("incidentData", JSON.stringify(data));
     document.getElementById("questionBox").style.display = "none";
     document.getElementById("resultBox").style.display = "block";
     document.getElementById("listBox").style.display = "none";
 
     let summaryHtml = "";
-
     Object.keys(answers).forEach(key => {
-        summaryHtml += `
-            <div class="summary-item">
-                <strong>${answers[key].label}:</strong> ${answers[key].value}
-            </div>
-        `;
+        if (key !== "aiSuggestion") summaryHtml += `<div class="summary-item"><strong>${answers[key].label}:</strong> ${answers[key].value}</div>`;
     });
-
     document.getElementById("summaryText").innerHTML = summaryHtml;
-
     updateCharts();
 }
 
@@ -508,16 +672,44 @@ function openListPage() {
     document.getElementById("questionBox").style.display = "none";
     document.getElementById("resultBox").style.display = "none";
     document.getElementById("listBox").style.display = "block";
-
     clearSearch();
     renderTable();
 }
 
 function goHome() {
-    document.getElementById("listBox").style.display = "none";
+    answers = {};
+    questions = [];
+    currentStep = 0;
+    editIndex = null;
+    currentSuggestion = null;
     document.getElementById("questionBox").style.display = "none";
     document.getElementById("resultBox").style.display = "none";
+    document.getElementById("listBox").style.display = "none";
     document.getElementById("landingPage").style.display = "block";
+}
+
+function exitIncident() {
+    if (confirm("Are you sure you want to exit? Unsaved changes will not be saved.")) goHome();
+}
+
+function formatDate(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+function getStatusTag(status) {
+    const finalStatus = status || "-";
+    const color = finalStatus === "Closed" || finalStatus === "Approved" ? "#16a34a" :
+        finalStatus === "Rejected" ? "#dc2626" :
+        finalStatus === "Under Investigation" ? "#2563eb" :
+        finalStatus === "Open" ? "#f59e0b" :
+        finalStatus === "Draft" ? "#64748b" : "#6b7280";
+    return `<span style="padding:5px 12px;border-radius:8px;color:white;font-size:13px;font-weight:bold;display:inline-block;min-width:95px;text-align:center;background:${color};">${finalStatus}</span>`;
 }
 
 function renderTable() {
@@ -525,7 +717,6 @@ function renderTable() {
     const tbody = document.querySelector("#incidentTable tbody");
     const searchInput = document.getElementById("searchInput");
     const search = searchInput ? searchInput.value.toLowerCase() : "";
-
     tbody.innerHTML = "";
 
     data.forEach((item, index) => {
@@ -533,47 +724,86 @@ function renderTable() {
         const reportedBy = item.reportedBy || "";
         const recordNo = item.recordNo || "";
         const finalStatus = item.finalStatus || "";
-
-        if (
-            title.toLowerCase().includes(search) ||
-            reportedBy.toLowerCase().includes(search) ||
-            recordNo.toLowerCase().includes(search) ||
-            finalStatus.toLowerCase().includes(search)
-        ) {
+        if (title.toLowerCase().includes(search) || reportedBy.toLowerCase().includes(search) || recordNo.toLowerCase().includes(search) || finalStatus.toLowerCase().includes(search)) {
             tbody.innerHTML += `
             <tr style="border-bottom:1px solid #ddd;">
-                <td style="padding:12px;">${recordNo}</td>
-                <td style="padding:12px;">${title}</td>
-                <td style="padding:12px;">${reportedBy}</td>
-                <td style="padding:12px;">${finalStatus}</td>
-                <td style="padding:12px; text-align:center;">
-            <button onclick="viewIncident(${index})"
-                style="background:#2563eb;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;margin-right:5px;">
-                View
-            </button>
-
-            <button onclick="deleteIncident(${index})"
-                style="background:#dc2626;color:white;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;">
-                Delete
-            </button>
-        </td>
-            </tr>
-            `;
+                <td>${recordNo}</td>
+                <td>${title}</td>
+                <td>${formatDate(item.date)}</td>
+                <td>${reportedBy}</td>
+                <td>${getStatusTag(finalStatus)}</td>
+                <td>
+                    <div class="incident-actions">
+                        <button onclick="viewIncident(${index})" class="view-btn icon-btn" title="View">👁</button>
+                        <button onclick="editIncident(${index})" class="edit-btn icon-btn" title="Edit"><span class="edit-icon-text">✎</span></button>
+                        <!-- <button onclick="exportSingleIncident(${index})" class="export-icon-btn icon-btn" title="Export">⬇</button> -->
+                        <button onclick="deleteIncident(${index})" class="delete-btn icon-btn" title="Delete">🗑</button>
+                    </div>
+                </td>
+            </tr>`;
         }
     });
 }
 
 function clearSearch() {
     const searchInput = document.getElementById("searchInput");
-    if (searchInput) {
-        searchInput.value = "";
-    }
+    if (searchInput) searchInput.value = "";
     renderTable();
+}
+
+function editIncident(index) {
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+    const item = data[index];
+    if (!item) { alert("Incident record not found."); return; }
+    editIndex = index;
+    currentStep = 0;
+    answers = {
+        title: { label: "Incident Title", value: item.title || "" },
+        description: { label: "Description", value: item.description || "" },
+        date: { label: "Date of Incident", value: item.date || "" },
+        time: { label: "Time of Incident", value: item.time || "" },
+        location: { label: "Exact Location", value: item.location || "" },
+        reportedBy: { label: "Reported By", value: item.reportedBy || "" },
+        isValid: { label: "Incident Valid", value: item.isValid || "" }
+    };
+    questions = getBaseQuestions();
+
+    if (item.isValid === "Yes") {
+        answers.investigationRequired = { label: "Investigation Required", value: item.investigationRequired || "" };
+        questions.push({ key: "investigationRequired", label: "Investigation Required", text: "Is investigation required?", type: "select", options: ["Yes", "No"] });
+        if (item.investigationRequired === "Yes") {
+            answers.leadInvestigator = { label: "Lead Investigator", value: item.leadInvestigator || "" };
+            answers.methodology = { label: "Investigation Methodology", value: item.methodology || "" };
+            answers.approvedBy = { label: "Approved By", value: item.approvedBy || "" };
+            answers.approvedDate = { label: "Approved Date", value: item.approvedDate || "" };
+            answers.finalStatus = { label: "Final Status", value: item.finalStatus === "Draft" ? "" : item.finalStatus || "" };
+            questions.push(
+                { key: "leadInvestigator", label: "Lead Investigator", text: "Who will be the lead investigator?", type: "text" },
+                { key: "methodology", label: "Investigation Methodology", text: "What investigation methodology is used?", type: "select", options: ["SCAT", "ICAM", "5 Why", "Fishbone"] },
+                { key: "approvedBy", label: "Approved By", text: "Who approved it?", type: "text" },
+                { key: "approvedDate", label: "Approved Date", text: "When was it approved?", type: "date" },
+                { key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Open", "Under Investigation", "Approved", "Closed", "Rejected"] }
+            );
+        } else if (item.investigationRequired === "No") {
+            answers.finalStatus = { label: "Final Status", value: item.finalStatus === "Draft" ? "" : item.finalStatus || "" };
+            questions.push({ key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Closed", "No Action Required"] });
+        }
+    } else if (item.isValid === "No") {
+        answers.finalStatus = { label: "Final Status", value: item.finalStatus === "Draft" ? "" : item.finalStatus || "" };
+        questions.push({ key: "finalStatus", label: "Final Status", text: "What is the final status?", type: "select", options: ["Rejected", "Closed"] });
+    }
+
+    document.getElementById("landingPage").style.display = "none";
+    document.getElementById("resultBox").style.display = "none";
+    document.getElementById("listBox").style.display = "none";
+    document.getElementById("questionBox").style.display = "block";
+    document.getElementById("submitBtn").innerText = "Update Incident";
+    document.getElementById("saveDraftBtn").innerText = "Save & Exit";
+    showQuestion();
 }
 
 function deleteIncident(index) {
     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
-
     if (confirm("Are you sure you want to delete this incident?")) {
         data.splice(index, 1);
         localStorage.setItem("incidentData", JSON.stringify(data));
@@ -583,124 +813,96 @@ function deleteIncident(index) {
 
 function updateCharts() {
     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
-
     const total = data.length;
-
-    const reportedMap = {};
-    const approvedMap = {};
-    const investigatorMap = {};
-    const methodMap = {};
-
+    const reportedMap = {}, approvedMap = {}, investigatorMap = {}, methodMap = {};
     data.forEach(d => {
         if (d.reportedBy) reportedMap[d.reportedBy] = (reportedMap[d.reportedBy] || 0) + 1;
         if (d.approvedBy) approvedMap[d.approvedBy] = (approvedMap[d.approvedBy] || 0) + 1;
         if (d.leadInvestigator) investigatorMap[d.leadInvestigator] = (investigatorMap[d.leadInvestigator] || 0) + 1;
         if (d.methodology) methodMap[d.methodology] = (methodMap[d.methodology] || 0) + 1;
     });
-
-    let chartHTML = `
-        <div class="summary-item"><strong>Total Incidents Reported:</strong> ${total}</div>
-    `;
-
+    let chartHTML = `<div class="summary-item"><strong>Total Incidents Reported:</strong> ${total}</div>`;
     function buildBars(title, map) {
         let html = `<h4>${title}</h4>`;
-
-        if (Object.keys(map).length === 0) {
-            html += `<div class="summary-item">No data available</div>`;
-            return html;
-        }
-
+        if (Object.keys(map).length === 0) return html + `<div class="summary-item">No data available</div>`;
         Object.keys(map).forEach(key => {
-            let percent = Math.round((map[key] / total) * 100);
-            html += `
-                <div class="bar-row">
-                    <div class="bar-label">${key} (${map[key]})</div>
-                    <div class="bar-bg">
-                        <div class="bar" style="width:${percent}%">${percent}%</div>
-                    </div>
-                </div>
-            `;
+            let percent = total > 0 ? Math.round((map[key] / total) * 100) : 0;
+            html += `<div class="bar-row"><div class="bar-label">${key} (${map[key]})</div><div class="bar-bg"><div class="bar" style="width:${percent}%">${percent}%</div></div></div>`;
         });
-
         return html;
     }
-
     chartHTML += buildBars("Reported By", reportedMap);
     chartHTML += buildBars("Approved By", approvedMap);
     chartHTML += buildBars("Investigated By", investigatorMap);
     chartHTML += buildBars("Methodologies Used", methodMap);
-
     document.getElementById("chartContent").innerHTML = chartHTML;
 }
 
-function exportPDF() {
-    window.print();
+function cleanCsvValue(value) {
+    return String(value || "").replace(/"/g, '""').replace(/\r?\n|\r/g, " ");
 }
 
-function exportExcel() {
-    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+function getCsvHeader() {
+    return "Record No,Title,Description,Date,Time,Location,Reported By,Incident Valid,Investigation Required,Lead Investigator,Methodology,Approved By,Approved Date,Final Status\n";
+}
 
-    if (data.length === 0) {
-        alert("No incident data available to export.");
-        return;
-    }
+function getCsvRow(item) {
+    return `"${cleanCsvValue(item.recordNo)}","${cleanCsvValue(item.title)}","${cleanCsvValue(item.description)}","${cleanCsvValue(formatDate(item.date))}","${cleanCsvValue(item.time)}","${cleanCsvValue(item.location)}","${cleanCsvValue(item.reportedBy)}","${cleanCsvValue(item.isValid)}","${cleanCsvValue(item.investigationRequired)}","${cleanCsvValue(item.leadInvestigator)}","${cleanCsvValue(item.methodology)}","${cleanCsvValue(item.approvedBy)}","${cleanCsvValue(formatDate(item.approvedDate))}","${cleanCsvValue(item.finalStatus)}"\n`;
+}
 
-    let csv = "Record No,Title,Description,Date,Time,Location,Reported By,Incident Valid,Investigation Required,Lead Investigator,Methodology,Approved By,Approved Date,Final Status\n";
-
-    data.forEach(item => {
-        csv += `"${item.recordNo}","${item.title}","${item.description}","${item.date}","${item.time}","${item.location}","${item.reportedBy}","${item.isValid}","${item.investigationRequired}","${item.leadInvestigator}","${item.methodology}","${item.approvedBy}","${item.approvedDate}","${item.finalStatus}"\n`;
-    });
-
+function downloadCsv(csv, filename) {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-
     link.href = URL.createObjectURL(blob);
-    link.download = "incident_reports.csv";
-
+    link.download = filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 }
 
-function toggleExportOptions() {
-    const exportOptions = document.getElementById("exportOptions");
-
-    if (exportOptions.style.display === "none") {
-        exportOptions.style.display = "block";
-    } else {
-        exportOptions.style.display = "none";
-    }
+function exportExcel() {
+    let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+    if (data.length === 0) { alert("No incident data available to export."); return; }
+    let csv = getCsvHeader();
+    data.forEach(item => csv += getCsvRow(item));
+    downloadCsv(csv, "incident_reports.csv");
 }
 
-function closeSummary() {
-    document.getElementById("resultBox").style.display = "none";
-    document.getElementById("questionBox").style.display = "none";
-    document.getElementById("listBox").style.display = "none";
-    document.getElementById("landingPage").style.display = "block";
-}
+// function exportSingleIncident(index) {
+//     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
+//     const item = data[index];
+//     if (!item) { alert("Incident record not found."); return; }
+//     downloadCsv(getCsvHeader() + getCsvRow(item), `${item.recordNo || "incident"}_report.csv`);
+// }
+
+function closeSummary() { goHome(); }
 
 function restartIncident() {
     answers = {};
     questions = [];
     currentStep = 0;
-
-    document.getElementById("progressFill").style.width = "0%";
+    editIndex = null;
+    currentSuggestion = null;
     document.getElementById("resultBox").style.display = "none";
     document.getElementById("listBox").style.display = "none";
-
     startIncident();
 }
 
-   function viewIncident(index) {
+function viewIncident(index) {
     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
     const item = data[index];
-
+    if (!item) return;
+    const labels = {
+        recordNo: "Record No", title: "Title", description: "Description", date: "Incident Date", time: "Time", location: "Location", reportedBy: "Reported By",
+        isValid: "Incident Valid", investigationRequired: "Investigation Required", leadInvestigator: "Lead Investigator", methodology: "Methodology",
+        approvedBy: "Approved By", approvedDate: "Approved Date", finalStatus: "Final Status"
+    };
     let html = "";
-
-    Object.keys(item).forEach(key => {
-        html += `<p><strong>${key}:</strong> ${item[key]}</p>`;
+    Object.keys(labels).forEach(key => {
+        let value = item[key] || "";
+        if (key === "date" || key === "approvedDate") value = formatDate(value);
+        html += `<p><strong>${labels[key]}:</strong> ${value}</p>`;
     });
-
     document.getElementById("modalContent").innerHTML = html;
     document.getElementById("viewModal").style.display = "block";
 }
@@ -708,19 +910,13 @@ function restartIncident() {
 function closeModal() {
     document.getElementById("viewModal").style.display = "none";
 }
-
-</script>
 </script>
 
-<!-- ADD THIS HERE -->
 <div id="viewModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1000;">
-    <div style="background:white; width:500px; margin:80px auto; padding:20px; border-radius:10px;">
-        <h3>Incident Details</h3>
-        <div id="modalContent"></div>
-
-        <div style="margin-top:20px; text-align:right;">
-            <button onclick="closeModal()" class="back-btn">Close</button>
-        </div>
+    <div class="modal-card">
+        <h3 style="margin-top:0;">Incident Details</h3>
+        <div id="modalContent" class="modal-scroll-content"></div>
+        <div style="margin-top:20px; text-align:right;"><button onclick="closeModal()" class="back-btn">Close</button></div>
     </div>
 </div>
 
