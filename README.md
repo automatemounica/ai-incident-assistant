@@ -23,7 +23,6 @@ Open `index.html` in any browser.
 ## Future Enhancements
 - Store data in backend database
 - Add login and roles
-- Add edit/view incident list
 - Add real charts
 - Deploy using GitHub Pages
 
@@ -55,6 +54,18 @@ Open `index.html` in any browser.
 
 ### View Incident Details
 ![View](screenshots/view.png)
+
+### AI Suggestions (Based on Incident Title)
+![AI Suggestions](screenshots/ai-suggestions.png)
+
+### Save Draft Functionality
+![Save Draft](screenshots/draft.png)
+
+### Edit Incident Workflow
+![Edit](screenshots/edit.png)
+
+### Export (All)
+![Export Updated](screenshots/export-new.png)
 
 ## Live Demo
 https://automatemounica.github.io/ai-incident-assistant/

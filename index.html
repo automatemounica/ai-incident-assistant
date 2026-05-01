@@ -601,8 +601,8 @@ function saveDraft() {
     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
 
     const recordNo = editIndex !== null
-        ? data[editIndex].recordNo
-        : "INC-" + String(data.length + 1).padStart(4, "0");
+    ? data[editIndex].recordNo
+    : generateRecordNo(data);
 
     const draftItem = {
         recordNo: recordNo,
@@ -641,7 +641,9 @@ function submitForm() {
     answers[q.key] = { label: q.label, value: val };
 
     let data = JSON.parse(localStorage.getItem("incidentData")) || [];
-    const recordNo = editIndex !== null ? data[editIndex].recordNo : "INC-" + String(data.length + 1).padStart(4, "0");
+    const recordNo = editIndex !== null
+    ? data[editIndex].recordNo
+    : generateRecordNo(data);
     answers.recordNo = { label: "Record No", value: recordNo };
     const incidentItem = buildIncidentItem(recordNo);
 
@@ -858,6 +860,28 @@ function downloadCsv(csv, filename) {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+function generateRecordNo(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+        return "INC-0001"; // 
+    }
+
+    let max = 0;
+
+    data.forEach(item => {
+        if (item && item.recordNo) {
+            const match = item.recordNo.match(/\d+/);
+            if (match) {
+                const num = parseInt(match[0], 10);
+                if (!isNaN(num) && num > max) {
+                    max = num;
+                }
+            }
+        }
+    });
+
+    return "INC-" + String(max + 1).padStart(4, "0");
 }
 
 function exportExcel() {
